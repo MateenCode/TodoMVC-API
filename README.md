@@ -1,5 +1,5 @@
 # TodoMVC-API
-JsonAPI, Mongoos, Backend 
+JsonAPI, Mongoos, Backend
 
 # ScreenShot
 

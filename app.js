@@ -39,7 +39,7 @@ app.post('/api/todos', function (req, res) {
       todo.completed = req.body.completed
       todo.save()
       .then(function (todo) {
-        console.log('Updated task:' + todo)
+
         res.json(todo)
       })
       .catch(function (error) {
@@ -53,7 +53,6 @@ app.post('/api/todos', function (req, res) {
     todo.completed = req.body.completed
     todo.save()
     .then(function (todos) {
-      console.log('New task: ' + todos)
       res.json(todos)
     })
     .catch(function (error) {
@@ -106,7 +105,6 @@ app.patch('/api/todos/:id', function (req, res) {
     todo.completed = req.body.completed
     todo.save()
     .then(function (todo) {
-      console.log('Updated task:' + todo)
       res.json(todo)
     })
     .catch(function (error) {
