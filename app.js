@@ -1,84 +1,129 @@
-const fs = require('fs');
-const path = require('path');
-const express = require('express');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const Todos = require('./todos')
-const app = express();
+const fs = require('fs')
+const path = require('path')
+const express = require('express')
+const app = express()
+const mongoose = require('mongoose')
+const bodyParser = require('body-parser')
+const Todo = require('./models/Todo')
 
-app.use('/static', express.static('static'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-  extended: false
-}));
-mongoose.Promise = require('bluebird');
-mongoose.connect('mongodb://localhost:27017/todos');
+mongoose.Promise = require('bluebird')
+mongoose.connect('mongodb://localhost:27017/todomvc')
 
-app.get('/', function(req, res) {
-  res.sendFile(__dirname + "/static/index.html");
-  res.json([{
-      title: 'Wash my car',
-      complete: false
-    },
-    {
-      title: 'Eat lunch',
-      complete: false
-    }
-  ])
+app.use('/static', express.static('static'))
+app.use(bodyParser.json())
+
+app.get('/', function (req, res) {
+  res.sendFile(__dirname + '/static/index.html')
 })
 
-app.post('/api/todos/', function(req, res) {
-  var todo = new Todos()
-  todo.title = req.body.title;
-  todo.complete = req.body.complete;
-  todo.save().then(function(todo) {
+app.get('/api/todos/', function (request, respond) {
+  Todo.find()
+  .sort('order')
+  .then(function (todos) {
+    respond.json(todos)
+  })
+  .catch(function (error) {
+    request.status(422).json(error)
+  })
+})
+
+
+app.post('/api/todos', function (req, res) {
+  if (req.body._id) {
+    Todo.findOne({
+      '_id': req.body._id
+    })
+    .then(function (todo) {
+      todo.title = req.body.title
+      todo.order = req.body.order
+      todo.completed = req.body.completed
+      todo.save()
+      .then(function (todo) {
+        console.log('Updated task:' + todo)
+        res.json(todo)
+      })
+      .catch(function (error) {
+        res.status(404).json(error)
+      })
+    })
+  } else {
+    let todo = new Todo()
+    todo.title = req.body.title
+    todo.order = req.body.order
+    todo.completed = req.body.completed
+    todo.save()
+    .then(function (todos) {
+      console.log('New task: ' + todos)
+      res.json(todos)
+    })
+    .catch(function (error) {
+      res.status(422).json(error)
+    })
+  }
+})
+
+
+app.get('/api/todos/:id', function (req, res) {
+  Todo.findOne({
+    '_id': req.params.id
+  })
+  .then(function (todo) {
     res.json(todo)
-  }).catch(function(err) {
-    throw err
+  })
+  .catch(function (error) {
+    res.status(422).json(error)
   })
 })
 
-app.get('/api/todos/:id', function(req, res) {
 
-  Todos.findOne({
-    _id: req.params.id
-  }).then(function(todos) {
-    res.json(todos)
-  }).catch(function(err) {
-    throw err
+
+app.put('/api/todos/:id', function (req, res) {
+  Todo.findOne({
+    '_id': req.params.id
   })
-
-})
-
-app.put('/api/todos/:id', function(req, res){
-  Todos.updateOne({
-    _id: req.params.id
-  }).then(function(todos) {
-    res.json(todos)
-  }).catch(function(err) {
-    throw err
-  })
-})
-
-app.patch('/api/todos/:id', function(req, res){
-  Todos.findOne({
-    complete: true,
-    _id: req.params.id
-  }).then(function(todos) {
-    res.json(todos)
-  }).catch(function(err) {
-    throw err
+  .then(function (todo) {
+    todo.title = req.body.title
+    todo.order = req.body.order
+    todo.completed = req.body.completed
+    todo.save()
+    .then(function (todo) {
+      console.log('Updated task:' + todo)
+      res.json(todo)
+    })
+    .catch(function (error) {
+      res.status(404).json(error)
+    })
   })
 })
 
-app.delete('/api/todos/:id', function(req, res){
-  Todos.deleteOne({
-    complete: true,
-    _id: req.params.id
-  }).then(function(todos) {
-    res.json(todos)
-  }).catch(function(err) {
-    throw err
+app.patch('/api/todos/:id', function (req, res) {
+  Todo.findOne({
+    '_id': req.params.id
+  })
+  .then(function (todo) {
+    todo.title = req.body.title
+    todo.order = req.body.order
+    todo.completed = req.body.completed
+    todo.save()
+    .then(function (todo) {
+      console.log('Updated task:' + todo)
+      res.json(todo)
+    })
+    .catch(function (error) {
+      res.status(404).json(error)
+    })
+  })
+})
+
+app.delete('/api/todos/:id', function (req, res) {
+  Todo.deleteOne({
+    '_id': req.params.id
+  })
+  .then(function (todo) {
+    res.json(todo)
+  })
+  .catch(function (error) {
+    res.status(422).json(error)
   })
 })
 
